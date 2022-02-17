@@ -1,4 +1,4 @@
-## EKS Operator for Migration Hub Refactyor Spaces
+## EKS Operator for Migration Hub RefactorSpaces
 
 The solution uses a custom built Kubernetes operator which looks for Kubernetes services of type LoadBalancer, Ingress and NodePort in the EKS cluster where the operator is installed, and then uses APIs to manage the service and route configuration in Migration Hub Refactor Spaces.
 
