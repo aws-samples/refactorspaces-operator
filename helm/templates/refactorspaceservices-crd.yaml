@@ -1,0 +1,64 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: refactorspaceservices.eks.amazonaws.com
+spec:
+  scope: Namespaced
+  group: eks.amazonaws.com
+  names:
+    kind: RefactorSpaceService
+    plural: refactorspaceservices
+    singular: refactorspaceservice
+    shortNames:
+      - rsss
+      - rss
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+              properties: 
+                route: 
+                  type: string
+                prefix:
+                  type: string
+                healthCheckPrefix:
+                  type: string
+                protocol:
+                    type: string 
+                method: 
+                    type: string
+                serviceSelector:
+                  x-kubernetes-preserve-unknown-fields: true 
+                  type: object
+                configurationName: 
+                  type: string
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                state:
+                  type: string
+                service:
+                  type: string
+                appId:
+                  type: string 
+                envId:
+                  type: string  
+                vpcId:
+                  type: string
+                routes:
+                  type: string
+                

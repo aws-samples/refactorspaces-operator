@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.deployment.name }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      application: "{{ .Values.deployment.name }}"
+  template:
+    metadata:
+      labels:
+        application: "{{ .Values.deployment.name }}"
+    spec:
+      serviceAccountName: "{{ .Values.serviceAccount.name }}" 
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

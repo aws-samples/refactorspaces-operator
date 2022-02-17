@@ -1,0 +1,27 @@
+# Default values for refactorspace-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: refactorspace-system
+deployment:
+  name: refactorspace-operator
+
+image:
+  repository: icplab/rs-operator
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "refactorspace-account"
+
+  iamRoleArn: arn:aws:iam::XXXXXXXXXXXXXXX:role/refactorspace-role-cluster
+
+clusterRole: refactorspace-k8s-role-cluster
+clusterRoleBinding: refactorspace-rolebinding-cluster
