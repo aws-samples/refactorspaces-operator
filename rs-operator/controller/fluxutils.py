@@ -1,18 +1,19 @@
 import boto3
 import time
+import logging
 import yaml
 refactor_space_client = boto3.client('migration-hub-refactor-spaces')
 
 def delete_flux_service(envId,appId,name):
 
-    print ('delete_flux_service')
+    logging.info ('delete_flux_service')
 
     seevicelist_response = refactor_space_client.list_services(
         ApplicationIdentifier=appId,
         EnvironmentIdentifier=envId,
         MaxResults=100
     )
-    print (seevicelist_response)
+    logging.info (seevicelist_response)
 
     routelist_response = refactor_space_client.list_routes(
         ApplicationIdentifier=appId,
@@ -20,24 +21,24 @@ def delete_flux_service(envId,appId,name):
         MaxResults=100
     )
 
-    print (routelist_response)
+    logging.info (routelist_response)
     
     ServiceSummaryList = seevicelist_response["ServiceSummaryList"]
     RouteSummaryList = routelist_response["RouteSummaryList"]
 
-    print ("ServiceSummaryList")
-    print (ServiceSummaryList)
-    print ("RouteSummaryList")
-    print (RouteSummaryList)
+    logging.info ("ServiceSummaryList")
+    logging.info (ServiceSummaryList)
+    logging.info ("RouteSummaryList")
+    logging.info (RouteSummaryList)
 
     routeDeletion = False
     # delete the routes
     for s in ServiceSummaryList:
         if s["Name"]==name:
-            print ("Match Found:::: "+s["Name"]+" is "+name)
+            logging.info ("Match Found:::: "+s["Name"]+" is "+name)
             for r in routelist_response["RouteSummaryList"]:
                    if r["ServiceId"] == s["ServiceId"]:
-                        print(name+" - deleting route "+r["RouteId"])
+                        logging.info(name+" - deleting route "+r["RouteId"])
                         refactor_space_client.delete_route(
                             ApplicationIdentifier=appId,
                             EnvironmentIdentifier=envId,
@@ -48,7 +49,7 @@ def delete_flux_service(envId,appId,name):
 
     for s in seevicelist_response["ServiceSummaryList"]:
         if s["Name"]==name:
-            print(name+" - deleting service")
+            logging.info(name+" - deleting service")
             refactor_space_client.delete_service(
                 ApplicationIdentifier=appId,
                 EnvironmentIdentifier=envId,
@@ -57,11 +58,11 @@ def delete_flux_service(envId,appId,name):
 
 def create_flux_service(envId,appId,vpcId,name,url,healthCheckUrl, path, method):
 
-    print ("inside create_flux_service")
-    print ("url:"+url)
-    print ("healthCheckUrl:"+healthCheckUrl)
-    print ("path:"+path)
-    print ("method:"+method)
+    logging.info ("inside create_flux_service")
+    logging.info ("url:"+url)
+    logging.info ("healthCheckUrl:"+healthCheckUrl)
+    logging.info ("path:"+path)
+    logging.info ("method:"+method)
 
     # delete the service and routes if exists
     delete_flux_service(envId,appId,name)
@@ -79,35 +80,59 @@ def create_flux_service(envId,appId,vpcId,name,url,healthCheckUrl, path, method)
         },
         VpcId=vpcId
     )
-    print(name+' service created: '+ response['ServiceId'])
+    logging.info(name+' service created: '+ response['ServiceId'])
+
+
+
+    # Check if there is any routes exists
+    routelist_response = refactor_space_client.list_routes(
+        ApplicationIdentifier=appId,
+        EnvironmentIdentifier=envId,
+        MaxResults=100
+    )
+
+    logging.info (routelist_response)
+    RouteSummaryList = routelist_response["RouteSummaryList"]
+    strRouteType = 'DEFAULT'
+    if len(RouteSummaryList) > 0 :
+        strRouteType = 'URI_PATH'
 
     time.sleep(10) #wait for 10 sec
 
-    print(name+' now creating route: for '+ path +" with "+method)
+    logging.info(name+' now creating route: for '+ path +" with "+method)
 
 
-    print("appId:"+appId)
-    print("envId:"+envId)
-    print("RouteType='URI_PATH'")
-    print("ServiceIdentifier:"+response['ServiceId'])
-    print("Methods:"+method)
-    print("SourcePath:"+path)
+    logging.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    logging.info("appId:"+appId)
+    logging.info("envId:"+envId)
+    logging.info("RouteType:"+strRouteType)
+    logging.info("ServiceIdentifier:"+response['ServiceId'])
+    logging.info("Methods:"+method)
+    logging.info("SourcePath:"+path)
+    logging.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
-
-    route_response = refactor_space_client.create_route(
-        ApplicationIdentifier=appId,
-        EnvironmentIdentifier=envId,
-        RouteType='URI_PATH',
-        ServiceIdentifier=response['ServiceId'],
-        UriPathRoute={
-            'ActivationState': 'ACTIVE',
-            'IncludeChildPaths': True,
-            'Methods': [ 
-                method,
-            ],
-            'SourcePath': path
-        }
-    )
+    if strRouteType == 'DEFAULT' :
+        route_response = refactor_space_client.create_route(
+            ApplicationIdentifier=appId,
+            EnvironmentIdentifier=envId,
+            RouteType=strRouteType,
+            ServiceIdentifier=response['ServiceId']
+        )
+    else:
+        route_response = refactor_space_client.create_route(
+            ApplicationIdentifier=appId,
+            EnvironmentIdentifier=envId,
+            RouteType=strRouteType,
+            ServiceIdentifier=response['ServiceId'],
+            UriPathRoute={
+                'ActivationState': 'ACTIVE',
+                'IncludeChildPaths': True,
+                'Methods': [ 
+                    method,
+                ],
+                'SourcePath': strSourcePath
+            }
+        )
 
     return response['ServiceId']
 

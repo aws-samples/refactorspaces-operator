@@ -8,6 +8,7 @@ import kubernetes.client
 from kubernetes.client.rest import ApiException
 import yaml
 import k8sUtils
+import logging
 refactor_space_client = boto3.client('migration-hub-refactor-spaces')
 
 @kopf.on.startup()
@@ -15,6 +16,7 @@ def configure(settings: kopf.OperatorSettings, **_):
     settings.persistence.finalizer = 'refactorspace-operator.eks.amazonaws.com/finalizer'
     settings.watching.server_timeout = 60
     settings.watching.connect_timeout = 60
+    settings.posting.level = logging.INFO
 
 @kopf.on.create('refactorspaceservice')
 def create_fn(spec,meta, status, **kwargs):
