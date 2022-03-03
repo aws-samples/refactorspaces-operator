@@ -1,10 +1,10 @@
-# Default values for refactorspace-operator.
+# Default values for refactorspaces-operator.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: refactorspace-system
+namespace: refactorspaces-system
 deployment:
-  name: refactorspace-operator
+  name: refactorspaces-operator
 
 image:
   repository: icplab/rs-operator
@@ -19,9 +19,9 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: "refactorspace-account"
+  name: "refactorspaces-account"
 
-  iamRoleArn: arn:aws:iam::XXXXXXXXXXXXXXX:role/refactorspace-role-cluster
+  iamRoleArn: arn:aws:iam::xxxxxxxxxx:role/refactorspaces-role-cluster
 
-clusterRole: refactorspace-k8s-role-cluster
-clusterRoleBinding: refactorspace-rolebinding-cluster
+clusterRole: refactorspaces-k8s-role-cluster
+clusterRoleBinding: refactorspaces-rolebinding-cluster
