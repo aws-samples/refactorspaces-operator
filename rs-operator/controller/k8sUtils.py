@@ -1,6 +1,7 @@
 import kubernetes.client
 import objects
 import errors
+import logging
 from kubernetes.client.rest import ApiException
 
 
@@ -10,7 +11,7 @@ def get_flux_config(cfgname, namespace):
         api_client = kubernetes.client.ApiClient()
         api_instance = kubernetes.client.CustomObjectsApi(api_client)
         api_response = api_instance.get_namespaced_custom_object("eks.amazonaws.com", "v1", namespace,
-                                                                    "refactorspaceconfigs", cfgname)
+                                                                    "refactorspacesconfigs", cfgname)
         obj = objects.FluxConfig(api_response)
         return obj
     except Exception as e:
@@ -19,19 +20,17 @@ def get_flux_config(cfgname, namespace):
 def add_finalizer_to_config(cfgname,cfgname_namespace,namespace,svcname, serviceId):
     #try:
 
-        print("inside add_finalizer_to_config")
-        print("cfgname:"+cfgname)
-        print("cfgname_namespace:"+cfgname_namespace)
-        print("namespace:"+namespace)
-        print("svcname:"+svcname)
-        print("serviceId:"+serviceId)
+        logging.info ("inside add_finalizer_to_config")
+        logging.info ("cfgname:"+cfgname)
+        logging.info ("cfgname_namespace:"+cfgname_namespace)
+        logging.info ("namespace:"+namespace)
+        logging.info ("svcname:"+svcname)
+        logging.info ("serviceId:"+serviceId)
 
         api_client = kubernetes.client.ApiClient()
         api_instance = kubernetes.client.CustomObjectsApi(api_client)
-        print("ok1")
         api_response = api_instance.get_namespaced_custom_object("eks.amazonaws.com", "v1", cfgname_namespace,
-                                                                    "refactorspaceconfigs", cfgname)
-        print("ok2")
+                                                                    "refactorspacesconfigs", cfgname)
         entryList = []
         try:
             entryList = api_response["metadata"]["finalizers"]
@@ -40,16 +39,14 @@ def add_finalizer_to_config(cfgname,cfgname_namespace,namespace,svcname, service
             pass    
 
         entryList.append(serviceId+'.'+namespace +"."+svcname)
-        print("ok3")
         service_patch = {
                     'metadata': 
                             {'finalizers': entryList}
                         }
 
         api_response = api_instance.patch_namespaced_custom_object("eks.amazonaws.com", "v1", cfgname_namespace,
-                                                                    "refactorspaceconfigs", cfgname, 
+                                                                    "refactorspacesconfigs", cfgname, 
                                                                      service_patch)
-        print("ok4")
         return api_response
     #except Exception as e:
     #    raise errors.ObjectNotFound(cfgname,namespace)
@@ -60,15 +57,15 @@ def delete_finalizer_binding(cfgname,cfgname_namespace, namespace,svcname, servi
         api_instance = kubernetes.client.CustomObjectsApi(api_client)
 
         api_response = api_instance.get_namespaced_custom_object("eks.amazonaws.com", "v1", cfgname_namespace,
-                                                                    "refactorspaceconfigs", cfgname)
+                                                                    "refactorspacesconfigs", cfgname)
         entryList = api_response["metadata"]["finalizers"]
-        print(entryList)
+        logging.info (entryList)
 
         s = serviceId+'.'+namespace +"."+svcname
         matchList = [x for x in entryList if s in x]
         resultSet = set(entryList)-set(matchList)
         
-        print(resultSet)
+        logging.info (resultSet)
 
         service_patch = {
                     'metadata': 
@@ -78,9 +75,9 @@ def delete_finalizer_binding(cfgname,cfgname_namespace, namespace,svcname, servi
         
 
         api_response = api_instance.patch_namespaced_custom_object("eks.amazonaws.com", "v1", cfgname_namespace,
-                                                                    "refactorspaceconfigs", cfgname, 
+                                                                    "refactorspacesconfigs", cfgname, 
                                                                      service_patch)
-        print(api_response)
+        logging.info (api_response)
 
         return api_response
 
@@ -125,14 +122,14 @@ def getk8sServiceEndPoint(namespace,svcSelector,protocol):
             url = protocol+"://" + k8sUtils.getNodeIP()+ ":"+str(res.items[0].spec.ports[0].node_port)
     else: # it may be a ingress
         api_response_ingress = k8s_v1b1.list_namespaced_ingress(namespace, label_selector=label_selector)
-        print (">>>>>>>>>>>>.")
-        print(api_response_ingress.items)
-        print (">>>>>>>>>>>>>")
+        logging.info  (">>>>>>>>>>>>.")
+        logging.info (api_response_ingress.items)
+        logging.info  (">>>>>>>>>>>>>")
         if len(api_response_ingress.items)>1:
-            print("len(api_response_ingress.items)>1")
+            logging.info ("len(api_response_ingress.items)>1")
             raise errors.InvalidSpecError(f"label_selector: {label_selector} returned multiple ingress match in {namespace} namespace. Must match with exactly one ingress.")
         elif len(api_response_ingress.items)==0:
-            print("len(api_response_ingress.items)==0")
+            logging.info ("len(api_response_ingress.items)==0")
             raise errors.InvalidSpecError(f"label_selector: {label_selector} does not match any service/ingress in {namespace} namespace")
 
         serviceName = api_response_ingress.items[0].metadata.name

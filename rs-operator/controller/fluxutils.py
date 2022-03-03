@@ -130,7 +130,7 @@ def create_flux_service(envId,appId,vpcId,name,url,healthCheckUrl, path, method)
                 'Methods': [ 
                     method,
                 ],
-                'SourcePath': strSourcePath
+                'SourcePath': path
             }
         )
 

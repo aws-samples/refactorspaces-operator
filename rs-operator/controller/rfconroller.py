@@ -13,12 +13,12 @@ refactor_space_client = boto3.client('migration-hub-refactor-spaces')
 
 @kopf.on.startup()
 def configure(settings: kopf.OperatorSettings, **_):
-    settings.persistence.finalizer = 'refactorspace-operator.eks.amazonaws.com/finalizer'
+    settings.persistence.finalizer = 'refactorspaces-operator.eks.amazonaws.com/finalizer'
     settings.watching.server_timeout = 60
     settings.watching.connect_timeout = 60
     settings.posting.level = logging.INFO
 
-@kopf.on.create('refactorspaceservice')
+@kopf.on.create('refactorspacesservice')
 def create_fn(spec,meta, status, **kwargs):
 
     svcname=meta.get("name")
@@ -47,57 +47,57 @@ def create_fn(spec,meta, status, **kwargs):
 
     cfg = {}
 
-    print("svcname:"+svcname)
-    print("namespace:"+namespace)
-    print(svcSelector)
-    print("cfgname:"+cfgname)
-    print("cfgname_namespace:"+cfgname_namespace)
+    logging.info ("svcname:"+svcname)
+    logging.info ("namespace:"+namespace)
+    logging.info (svcSelector)
+    logging.info ("cfgname:"+cfgname)
+    logging.info ("cfgname_namespace:"+cfgname_namespace)
 
     try:
-        #load RefcatorSpaceConfig object specified in the RefcatorSpaceService spec
+        #load RefcatorSpaceConfig object specified in the RefcatorSpacesService spec
         cfg = k8sUtils.get_flux_config(cfgname,cfgname_namespace)
 
         status["appId"]=cfg.get_appId()
         status["envId"]=cfg.get_envId()
         status["vpcId"]=cfg.get_vpcId()
 
-        print("appId:"+cfg.get_appId())
-        print("envId:"+cfg.get_envId())
-        print("vpcId:"+cfg.get_vpcId())
+        logging.info ("appId:"+cfg.get_appId())
+        logging.info ("envId:"+cfg.get_envId())
+        logging.info ("vpcId:"+cfg.get_vpcId())
 
-        print ("create_fn: OK1")
+        logging.info  ("create_fn: OK1")
 
     except errors.ObjectNotFound as e:
         status["state"]='ERROR'
         status["message"]=str(e)
-        print (str(e))
+        logging.info  (str(e))
         return status   #stop processing
 
     try:
         endpoint = k8sUtils.getk8sServiceEndPoint(namespace,svcSelector,protocol)
-        print(endpoint)
-        print ("create_fn: OK2")
+        logging.info (endpoint)
+        logging.info  ("create_fn: OK2")
     except errors.InvalidSpecError as e:
         status["state"]='ERROR'
         status["message"]=str(e)
-        print (str(e))
+        logging.info  (str(e))
         return status   #stop processing
     
     try:
-        print ("create_fn: OK3")
-        print (prefix)
-        print ("create_fn: OK3.1")
+        logging.info  ("create_fn: OK3")
+        logging.info  (prefix)
+        logging.info  ("create_fn: OK3.1")
         serviceId = fluxutils.create_flux_service(cfg.get_envId(),cfg.get_appId(),cfg.get_vpcId(),
                                                 svcname,endpoint["url"]+prefix,endpoint["url"]+healthCheckPrefix, 
                                                 route, method)
-        print ("create_fn: OK4")
+        logging.info  ("create_fn: OK4")
     except BaseException as e:
         status["state"]='ERROR'
         status["message"]=str(e)
-        print (str(e))
+        logging.info  (str(e))
         return status   #stop processing
 
-    print("serviceId:"+serviceId)
+    logging.info ("serviceId:"+serviceId)
 
     status["state"]='SUCCESS'
     status["k8sService"]=endpoint["serviceName"]
@@ -109,20 +109,20 @@ def create_fn(spec,meta, status, **kwargs):
     except BaseException as e:
         status["state"]='ERROR'
         status["message"]=str(e)
-        print (str(e))
+        logging.info  (str(e))
         return status   #stop processing
 
     return status
 
-@kopf.on.create('refactorspaceconfig')
+@kopf.on.create('refactorspacesconfig')
 def cfg_create(spec,meta, status, **kwargs):
     pass
 
 
-@kopf.on.delete('refactorspaceservice')
+@kopf.on.delete('refactorspacesservice')
 def delete_fn(spec,meta, status, **kwargs):
 
-    print("delete_flux_service")
+    logging.info ("delete_flux_service")
 
     svcname=meta.get("name")
     cfgname_with_namespace = spec.get("configurationName")
@@ -136,11 +136,11 @@ def delete_fn(spec,meta, status, **kwargs):
         cfgname = cfgname_arr[1]
         cfgname_namespace = cfgname_arr[0]
 
-    print (status.get("create_fn"))
+    logging.info  (status.get("create_fn"))
     if status.get("create_fn") is not None:
     
         serviceId = status.get("create_fn").get("serviceId")
-        print (serviceId)
+        logging.info  (serviceId)
 
         status = {}
         cfg = {}
@@ -156,36 +156,36 @@ def delete_fn(spec,meta, status, **kwargs):
             status["message"]=str(e)
             return status   #stop processing
 
-        print("now deleting flux service")
+        logging.info ("now deleting flux service")
         try:
             fluxutils.delete_flux_service(cfg.get_envId(),cfg.get_appId(),svcname)
-            print("flux service deleted")
+            logging.info ("flux service deleted")
         except BaseException as e:
             status["state"]='ERROR'
             status["message"]=str(e)
-            print (str(e))
+            logging.info  (str(e))
             return status   #stop processing
             
-        print("now delete_finalizer_binding ")
+        logging.info ("now delete_finalizer_binding ")
         try:
             k8sUtils.delete_finalizer_binding(cfgname,cfgname_namespace,namespace,svcname, serviceId)
-            print("finalizer_binding deleted")
+            logging.info ("finalizer_binding deleted")
         except BaseException as e:
             status["state"]='ERROR'
             status["message"]=str(e)
-            print (str(e))
+            logging.info  (str(e))
             return status   #stop processing
 
-@kopf.on.delete('refactorspaceconfig')
+@kopf.on.delete('refactorspacesconfig')
 def on_delete_cfg(spec,meta, status, **kwargs):
-    print ("on_delete_cfg")
+    logging.info  ("on_delete_cfg")
     pass
 
 
-@kopf.timer('refactorspaceconfig', interval=15.0)
+@kopf.timer('refactorspacesconfig', interval=15.0)
 def reconcile(spec,meta, status, **kwargs):
     #TODO
-    print (meta.get("finalizers"))
+    logging.info  (meta.get("finalizers"))
     #print (status.get("create_fn").get("serviceId"))
     
     pass    
