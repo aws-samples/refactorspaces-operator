@@ -23,12 +23,12 @@ rules:
 
   # Application: read-only access for watching cluster-wide.
   - apiGroups: [eks.amazonaws.com]
-    resources: [refactorspaceservices]
+    resources: [refactorspacesservices]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   # Application: read-only access for watching cluster-wide.
   - apiGroups: [eks.amazonaws.com]
-    resources: [refactorspaceconfigs]
+    resources: [refactorspacesconfigs]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]  
 
   - apiGroups: [""]

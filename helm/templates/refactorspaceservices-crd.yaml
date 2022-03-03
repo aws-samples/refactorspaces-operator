@@ -1,14 +1,14 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: refactorspaceservices.eks.amazonaws.com
+  name: refactorspacesservices.eks.amazonaws.com
 spec:
   scope: Namespaced
   group: eks.amazonaws.com
   names:
-    kind: RefactorSpaceService
-    plural: refactorspaceservices
-    singular: refactorspaceservice
+    kind: RefactorSpacesService
+    plural: refactorspacesservices
+    singular: refactorspacesservice
     shortNames:
       - rsss
       - rss
