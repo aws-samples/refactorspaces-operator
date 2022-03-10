@@ -44,13 +44,16 @@ aws eks describe-cluster --name <CLUSTER_NAME> --query "cluster.identity.oidc.is
 
 3. Edit the values.yaml
 
-a. replace the value in image.repository with your own repository where you pushed the rs-operator image. Refer the rs-operator/README for detail.
+    a. replace the value in image.repository with your own repository where you pushed the rs-operator image. Refer the rs-operator/README for detail.
 
-b. replace the value of serviceAccount.iamRoleArn with the ROle ARN that you have created in step 2
+    b. replace the value of serviceAccount.iamRoleArn with the ROle ARN that you have created in step 2
 
-4. Run the following command to install the helm chart
-helm install re-operator .
+4. Run the following command to install the helm chart.
 
+<pre>
+    helm install re-operator .
+</pre>
+    
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
