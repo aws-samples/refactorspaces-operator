@@ -14,7 +14,7 @@ a. create role refactorspace-role-cluster with following policy
     - AWSResourceAccessManagerFullAccess
 
 b. Make sure you edit the trust relartionship of the role as follows - 
-
+<pre>
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -33,7 +33,7 @@ b. Make sure you edit the trust relartionship of the role as follows -
         }
     ]
 }
-
+</pre>
 Replace placeholder {ACCOUNTID}, {OIDC_ID} and {REGION} with your own value. 
 
 You can use the following command to get the OIDC_ID - 
