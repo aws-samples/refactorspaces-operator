@@ -1,6 +1,6 @@
 apiVersion: v2
 name: refactorspace-operator
-description: Helm chart for AWS Migration Hub Refactor Space 
+description: Helm chart for AWS Migration Hub Refactor Spaces 
 
 # A chart can be either an 'application' or a 'library' chart.
 #
