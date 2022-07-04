@@ -15,7 +15,7 @@ The build script creates the docker image and push into the repository. To insta
 
 ## Security
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+See [CONTRIBUTING](../CONTRIBUTING.md#security-issue-notifications) for more information.
 
 
 ## License
